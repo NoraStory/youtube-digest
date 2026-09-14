@@ -2,10 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
-
-const root = path.resolve(__dirname, "..");
-const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
+const { loadScriptIntoSandbox, read, root } = require("./vm-loader.js");
 
 function loadSidepanelHelpers({
   sendMessage = () => Promise.resolve({}),
@@ -65,15 +62,14 @@ function loadSidepanelHelpers({
     },
     YTD_SETTINGS: {},
   };
-  sandbox.globalThis = sandbox;
-  vm.runInNewContext(read("sidepanel.js"), sandbox);
+  loadScriptIntoSandbox("sidepanel.js", sandbox);
   return sandbox.__YTD_TRANSCRIPT_TESTING__;
 }
 
 function loadBackgroundHelpers({
   settings = {
     provider: "deepseek",
-    aiApiKey: "test-key",
+    aiApiKey: process.env.YTD_TEST_AI_API_KEY || "fixture-alpha",
     aiBaseUrl: "https://api.deepseek.com",
     aiModel: "deepseek-v4-flash",
   },
@@ -135,8 +131,7 @@ function loadBackgroundHelpers({
         `https://www.youtube.com/watch?v=${videoId}`,
     },
   };
-  sandbox.globalThis = sandbox;
-  vm.runInNewContext(read("background.js"), sandbox);
+  loadScriptIntoSandbox("background.js", sandbox);
   return sandbox.__YTD_TRANSLATION_TESTING__;
 }
 

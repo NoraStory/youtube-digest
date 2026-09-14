@@ -481,7 +481,23 @@ async function checkCurrentTab() {
       active: true,
       lastFocusedWindow: true,
     });
-    const tab = tabs[0] || null;
+    let tab = tabs[0] || null;
+
+    // Browsers without the Side Panel API host this page as a regular tab, so
+    // the active tab is this panel page itself. In that case, use the most
+    // recently used YouTube tab for video detection instead.
+    if (tab?.url?.startsWith("chrome-extension://")) {
+      const youtubeTabs = await chrome.tabs.query({
+        url: "https://www.youtube.com/*",
+      });
+      const fallbackTab = youtubeTabs
+        .filter((item) => item.id !== tab.id)
+        .sort(
+          (a, b) =>
+            (b.lastAccessed || 0) - (a.lastAccessed || 0) || a.index - b.index,
+        )[0];
+      if (fallbackTab) tab = fallbackTab;
+    }
 
     debugLog("[YouTube Digest Panel] Found tab:", tab?.id, tab?.url);
 

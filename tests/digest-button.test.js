@@ -2,12 +2,9 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
+const { read } = require("./vm-loader.js");
 
-const contentScript = fs.readFileSync(
-  path.resolve(__dirname, "..", "content.js"),
-  "utf8",
-);
+const contentScript = read("content.js");
 
 class FakeElement {
   constructor({
@@ -135,7 +132,7 @@ function createHarness() {
     },
   };
 
-  const context = vm.createContext({
+  const context = {
     console,
     document,
     window: {
@@ -177,9 +174,10 @@ function createHarness() {
       return nextTimerId++;
     },
     clearInterval() {},
-  });
+  };
 
-  vm.runInContext(contentScript, context);
+  const { runScriptInSandbox } = require("./vm-loader.js");
+  runScriptInSandbox("content.js", context);
 
   return {
     context,

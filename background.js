@@ -230,10 +230,31 @@ async function readBoundedAiResponse(response, onActivity) {
 // ============================================================
 
 /**
+ * Microsoft Edge and other Chromium browsers ship the Side Panel API, but some
+ * Chromium builds (for example Android forks) do not expose a panel UI at all.
+ * Detecting the API once keeps the service worker from crashing on those
+ * browsers and lets the panel page open as a regular tab instead.
+ */
+function hasSidePanelApi() {
+  return typeof chrome.sidePanel?.setOptions === "function";
+}
+
+function openPanelAsTab() {
+  void chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel.html") });
+}
+
+/**
  * When the user clicks the extension icon, open the side panel.
  * Chrome's Side Panel API lets us show a persistent panel alongside the page.
  */
 chrome.action.onClicked.addListener((tab) => {
+  if (!hasSidePanelApi()) {
+    if ((tab.url || "").startsWith("https://www.youtube.com")) {
+      openPanelAsTab();
+    }
+    return;
+  }
+
   if (!(tab.url || "").startsWith("https://www.youtube.com")) {
     void updatePanelForTab(tab.id, tab.url, tab.windowId);
     return;
@@ -251,7 +272,9 @@ chrome.action.onClicked.addListener((tab) => {
 /**
  * Allow the side panel to open on any page, but it's designed for YouTube.
  */
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+if (hasSidePanelApi()) {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+}
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === "install") chrome.runtime.openOptionsPage();
@@ -275,7 +298,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 async function closePanelForTab(tabId, windowId) {
   // Chrome 141 added an explicit close API. On older supported versions,
   // disabling the tab-specific panel below remains the compatibility path.
-  if (typeof chrome.sidePanel.close !== "function") return;
+  if (typeof chrome.sidePanel?.close !== "function") return;
 
   try {
     // This closes the tab-specific panel used by YouTube Digest.
@@ -297,9 +320,15 @@ async function updatePanelForTab(tabId, url, windowId) {
     // Close the visible instance first. Then disable this tab so Chrome cannot
     // reopen the global default panel as navigation settles.
     await closePanelForTab(tabId, windowId);
-    await chrome.sidePanel.setOptions({ tabId, enabled: false }).catch(() => {});
+    if (hasSidePanelApi()) {
+      await chrome.sidePanel
+        .setOptions({ tabId, enabled: false })
+        .catch(() => {});
+    }
     return;
   }
+
+  if (!hasSidePanelApi()) return;
 
   // setOptions can reject if the tab just closed. Ignore that harmlessly.
   await chrome.sidePanel
@@ -454,6 +483,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "openSidePanel") {
     const tabId = sender.tab?.id;
     debugLog("[YouTube Digest BG] openSidePanel requested from tab:", tabId);
+
+    if (!hasSidePanelApi()) {
+      // Browsers without a Side Panel UI host the panel as a regular tab.
+      openPanelAsTab();
+      sendResponse({ success: true });
+      return false;
+    }
 
     // Re-enable the panel (it may have been disabled by auto-close) and open it.
     // IMPORTANT: we call setOptions + open synchronously (no await between them)

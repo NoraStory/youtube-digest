@@ -23,3 +23,7 @@ dist/
 .env.*
 *.pem
 *.key
+
+# Local preview/emulator scratch output
+.tmp-install/
+.mimosa/

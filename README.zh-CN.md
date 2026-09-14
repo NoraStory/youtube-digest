@@ -50,13 +50,27 @@ YouTube Digest 是一个需要自行提供 API Key 的开源项目，通过 GitH
 1. 打开 [github.com/zarazhangrui/youtube-digest](https://github.com/zarazhangrui/youtube-digest)。
 2. 点击 **Code**，再选择 **Download ZIP**。
 3. 选择一个长期保留的文件夹，并把项目解压到这里。可选建议是 macOS 或 Linux 上的 `~/Documents/youtube-digest`，或 Windows 上的 `%USERPROFILE%\Documents\youtube-digest`。你也可以使用其他文件夹。
-4. 在 Chrome 地址栏打开 `chrome://extensions`。
+4. 打开扩展页面：Chrome 使用 `chrome://extensions`，Microsoft Edge 使用 `edge://extensions`。
 5. 打开右上角的“开发者模式”。
 6. 点击“加载已解压的扩展程序”。
 7. 选择你刚才确定的那个准确项目文件夹，其中必须包含 `manifest.json`。
-8. 如果需要，可以在 Chrome 扩展菜单中固定 YouTube Digest。
+8. 如果需要，可以在浏览器扩展菜单中固定 YouTube Digest。
 
-这是一个本地加载的扩展，不会自动更新。下载新版或让 Agent 修改代码后，请在 `chrome://extensions` 中找到 YouTube Digest 并点击“重新加载”，然后刷新已经打开的 YouTube 页面。如果移动或删除源代码文件夹，Chrome 中加载的扩展会失效，需要从新的位置重新加载。
+### Microsoft Edge
+
+YouTube Digest 同样可以在 Microsoft Edge 中运行。本扩展只使用标准 Chrome 扩展 API，Edge 支持这些 API，因此在 `edge://extensions` 中开启“开发者模式”后，可以选择同一个项目文件夹本地加载。侧边栏、字幕、翻译和设置的使用方式与 Chrome 完全一致。如果下载的是 Release ZIP，`youtube-digest-edge-v*.zip` 是为 Edge 命名的完全相同的副本。
+
+这是一个本地加载的扩展，不会自动更新。下载新版或让 Agent 修改代码后，请在扩展页面（Chrome 为 `chrome://extensions`，Edge 为 `edge://extensions`）中找到 YouTube Digest 并点击“重新加载”，然后刷新已经打开的 YouTube 页面。如果移动或删除源代码文件夹，Chrome 中加载的扩展会失效，需要从新的位置重新加载。
+
+## 不安装也能预览界面
+
+可以在普通浏览器标签页中直接渲染真实的侧边栏和设置页面，方便截图和快速检查样式。在项目文件夹中运行：
+
+```bash
+node .preview/serve.mjs
+```
+
+然后打开 [http://127.0.0.1:8642/](http://127.0.0.1:8642/)。`.preview/mock-chrome.js` 提供了一个极小的 `chrome.*` 本地替身，因此真实页面可以在扩展宿主之外运行。预览仅用于界面展示：存储是内存替身，不会保存数据；字幕与 AI 功能仍需安装扩展并配置你自己的 API 密钥。详见 [.preview/README.md](.preview/README.md)。
 
 ## 设置 API Key
 

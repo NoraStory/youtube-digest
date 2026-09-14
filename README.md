@@ -48,13 +48,27 @@ If you prefer to do it yourself:
 1. Open [github.com/zarazhangrui/youtube-digest](https://github.com/zarazhangrui/youtube-digest).
 2. Choose **Code**, then **Download ZIP**.
 3. Choose a permanent folder and unzip the project there. Optional suggestions are `~/Documents/youtube-digest` on macOS or Linux, or `%USERPROFILE%\Documents\youtube-digest` on Windows. You may use a different folder.
-4. In Chrome, open `chrome://extensions`.
+4. Open the extensions page: `chrome://extensions` in Chrome, or `edge://extensions` in Microsoft Edge.
 5. Turn on **Developer mode**.
 6. Click **Load unpacked**.
 7. Select the exact project folder you chose, which must contain `manifest.json`.
-8. Pin YouTube Digest from Chrome's Extensions menu if you want quick access.
+8. Pin YouTube Digest from the browser's Extensions menu if you want quick access.
 
-Because this is an unpacked extension, it does not update automatically. After downloading an update or changing local files, click **Reload** on the YouTube Digest card at `chrome://extensions`, then refresh open YouTube tabs. Moving or deleting the source folder breaks the unpacked extension until you load it again from the new location.
+### Microsoft Edge
+
+YouTube Digest also runs in Microsoft Edge. The extension uses only standard Chrome extension APIs, which Edge supports, so you can load the same unpacked folder through `edge://extensions` with Developer mode on. The side panel, transcript, translation, and settings all work the same way. If you downloaded a release ZIP, the `youtube-digest-edge-v*.zip` file is a byte-identical copy named for Edge.
+
+Because this is an unpacked extension, it does not update automatically. After downloading an update or changing local files, click **Reload** on the YouTube Digest card at your browser's extensions page (`chrome://extensions` in Chrome, `edge://extensions` in Edge), then refresh open YouTube tabs. Moving or deleting the source folder breaks the unpacked extension until you load it again from the new location.
+
+## Preview the UI without installing
+
+You can render the real side panel and Settings pages in a normal browser tab, which is handy for screenshots and quick design checks. From the project folder, run:
+
+```bash
+node .preview/serve.mjs
+```
+
+Then open [http://127.0.0.1:8642/](http://127.0.0.1:8642/). A small local mock (`.preview/mock-chrome.js`) stands in for the Chrome extension APIs, so the genuine pages run outside the extension host. The preview only shows the interface: storage is an in-memory stand-in, and transcripts plus AI features still require the installed extension with your own API keys. See [.preview/README.md](.preview/README.md) for details.
 
 ## Set up your API keys
 

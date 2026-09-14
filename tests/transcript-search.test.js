@@ -1,11 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
-
-const root = path.resolve(__dirname, "..");
-const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
+const { loadScriptIntoSandbox, read } = require("./vm-loader.js");
 
 function loadSearchHelper() {
   const listeners = { addListener() {} };
@@ -49,8 +44,7 @@ function loadSearchHelper() {
     },
     YTD_SETTINGS: {},
   };
-  sandbox.globalThis = sandbox;
-  vm.runInNewContext(read("sidepanel.js"), sandbox);
+  loadScriptIntoSandbox("sidepanel.js", sandbox);
   return sandbox.__YTD_TRANSCRIPT_TESTING__.findLiteralTranscriptMatches;
 }
 

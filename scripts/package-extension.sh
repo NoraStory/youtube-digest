@@ -59,6 +59,12 @@ mv -f "$temporary_zip" "$output_zip"
 rmdir "$temporary_dir"
 trap - EXIT
 
+# Microsoft Edge loads the same MV3 package, so ship a byte-identical copy
+# with an Edge-specific name for users who download per-browser.
+output_zip_edge="$dist_dir/youtube-digest-edge-v$version.zip"
+cp -f "$output_zip" "$output_zip_edge"
+
 checksum="$(shasum -a 256 "$output_zip" | awk '{print $1}')"
 printf 'Created %s\n' "$output_zip"
+printf 'Created %s (identical copy for Edge)\n' "$output_zip_edge"
 printf 'SHA-256: %s\n' "$checksum"
